@@ -48,7 +48,6 @@ router.get("/all", (request, response) => {
 });
 router.get("/random", (request, response) => {
   const index = Math.floor(Math.random() * data.length);
-  console.log("random");
   return response.status(200).json(data[index]);
 });
 router.get("/:id", (request, response) => {
