@@ -46,17 +46,17 @@ const data = [
 router.get("/all", (request, response) => {
   return response.status(200).json(data);
 });
+router.get("/random", (request, response) => {
+  const index = Math.floor(Math.random() * data.length);
+  console.log("random");
+  return response.status(200).json(data[index]);
+});
 router.get("/:id", (request, response) => {
   const { id } = request.params;
 
   const findById = data.find((item) => item.id == id);
 
   return response.status(200).json(findById);
-});
-router.get("/random", (request, response) => {
-  const index = Math.floor(Math.random() * data.length);
-
-  return response.status(200).json(data[index]);
 });
 
 router.get("/setor/:nomeSetor", (request, response) => {
