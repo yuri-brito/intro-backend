@@ -1,12 +1,11 @@
 import express from "express";
-import EmployeeModel from "../models/employee.models";
-import { v4 as uuidv4 } from "uuid";
-
+import EmployeeModel from "../models/employee.models.js";
+import ProcessosModel from "../models/processos.model.js";
 const router = express.Router();
 
 router.get("/", async (request, response) => {
   try {
-    const data = await EmployeeModel.find();
+    const data = await EmployeeModel.find().populate("processos");
     return response.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -17,7 +16,7 @@ router.get("/", async (request, response) => {
 router.get("/:id", async (request, response) => {
   try {
     const { id } = request.params;
-    const employee = await EmployeeModel.findById(id);
+    const employee = await EmployeeModel.findById(id).populate("processos");
     if (!employee) {
       return response.status(404).json("Usuário não foi encontrado!");
     }
@@ -58,6 +57,7 @@ router.delete("/delete/:id", async (request, response) => {
   try {
     const { id } = request.params;
     const deleteEmployee = await EmployeeModel.findByIdAndDelete(id);
+    await ProcessosModel.deleteMany({ responsable: id });
     return response.status(200).json(deleteEmployee);
   } catch (error) {
     console.log(error);

@@ -1,11 +1,12 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
-import ProcessosModel from "../models/processos.model";
+import ProcessosModel from "../models/processos.model.js";
+import EmployeeModel from "../models/employee.models.js";
 const router = express.Router();
 
-router.get("/all", async (request, response) => {
+router.get("/", async (request, response) => {
   try {
-    const data = await ProcessosModel.find();
+    const data = await ProcessosModel.find().populate("responsable");
     return response.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -19,7 +20,7 @@ router.get("/all", async (request, response) => {
 router.get("/:id", async (request, response) => {
   try {
     const { id } = request.params;
-    const processo = await ProcessosModel.findById(id);
+    const processo = await ProcessosModel.findById(id).populate("responsable");
     if (!processo) {
       return response.status(404).json("Usuário não foi encontrado!");
     }
@@ -49,9 +50,16 @@ router.get("/:id", async (request, response) => {
 //   return response.status(200).json(filtered);
 // });
 
-router.post("/create", async (request, response) => {
+router.post("/create/:employeeId", async (request, response) => {
   try {
-    const newProcesso = await ProcessosModel.create(request.body);
+    const { employeeId } = request.params;
+    const newProcesso = await ProcessosModel.create({
+      ...request.body,
+      responsable: employeeId,
+    });
+    await EmployeeModel.findByIdAndUpdate(employeeId, {
+      $push: { processos: newProcesso._id },
+    });
 
     return response.status(201).json(newProcesso);
   } catch (error) {
@@ -87,6 +95,9 @@ router.delete("/delete/:id", async (request, response) => {
   try {
     const { id } = request.params;
     const deleteProcesso = await ProcessosModel.findByIdAndDelete(id);
+    await EmployeeModel.findByIdAndUpdate(deleteProcesso.responsable, {
+      $pull: { processos: deleteProcesso._id },
+    });
     return response.status(200).json(deleteProcesso);
   } catch (error) {
     console.log(error);

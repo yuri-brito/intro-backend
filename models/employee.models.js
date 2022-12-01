@@ -44,6 +44,12 @@ const employeeSchema = new Schema(
       type: String,
       enum: ["T.I.", "Marketing", "People", "CEO", "Estagiário"],
     },
+    processos: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Processo",
+      },
+    ],
   },
   {
     timestamps: true,
