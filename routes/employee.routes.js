@@ -1,51 +1,68 @@
 import express from "express";
+import EmployeeModel from "../models/employee.models";
 import { v4 as uuidv4 } from "uuid";
 
 const router = express.Router();
 
-const data = [
-  {
-    name: "Yuri",
-    cpf: "612847623873",
-    setor: "",
-  },
-];
-
-router.get("/", (request, response) => {
-  return response.status(200).json(data);
+router.get("/", async (request, response) => {
+  try {
+    const data = await EmployeeModel.find();
+    return response.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return response.status(500).json({ msg: "Algo de errado não está certo!" });
+  }
 });
 
-router.get("/:id", (request, response) => {
-  const { id } = request.params;
-
-  const findById = data.find((item) => item.id == id);
-
-  return response.status(200).json(findById);
+router.get("/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
+    const employee = await EmployeeModel.findById(id);
+    if (!employee) {
+      return response.status(404).json("Usuário não foi encontrado!");
+    }
+    return response.status(200).json(employee);
+  } catch (error) {
+    console.log(error);
+    return response.status(500).json({ msg: "Algo de errado não está certo!" });
+  }
 });
 
-router.post("/create", (request, response) => {
-  const newData = {
-    ...request.body,
-    id: uuidv4(),
-  };
-  data.push(newData);
-  return response.status(201).json(data);
+router.post("/create", async (request, response) => {
+  try {
+    const newEmployee = await EmployeeModel.create(request.body);
+
+    return response.status(201).json(newEmployee);
+  } catch (error) {
+    console.log(error);
+    return response.status(500).json({ msg: "Algo de errado não está certo!" });
+  }
 });
 
-router.put("/edit/:id", (request, response) => {
-  const { id } = request.params;
-  const update = data.find((item) => item.id === id);
-  const index = data.indexOf(update);
-  data[index] = { ...update, ...request.body };
-  return response.status(200).json(data[index]);
+router.put("/edit/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
+    const update = await EmployeeModel.findByIdAndUpdate(
+      id,
+      { ...request.body },
+      { new: true, runValidators: true }
+    );
+    return response.status(200).json(update);
+  } catch (error) {
+    console.log(error);
+    return response.status(500).json({ msg: "Algo de errado não está certo!" });
+  }
 });
 
-router.delete("/delete/:id", (request, response) => {
-  const { id } = request.params;
-  const deleteItem = data.find((item) => item.id === id);
-  const index = data.indexOf(deleteItem);
-  data.splice(index, 1);
-  return response.status(200).json(data);
+router.delete("/delete/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
+    const deleteEmployee = await EmployeeModel.findByIdAndDelete(id);
+    return response.status(200).json(deleteEmployee);
+  } catch (error) {
+    console.log(error);
+    return response.status(500).json({ msg: "Algo de errado não está certo!" });
+  }
 });
 
 export default router;
