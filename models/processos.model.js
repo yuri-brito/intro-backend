@@ -22,6 +22,10 @@ const processosSchema = new Schema(
     setor: {
       type: String,
     },
+    responsable: {
+      type: Schema.Types.ObjectId,
+      ref: "Employee",
+    },
   },
   {
     timestamps: true,
