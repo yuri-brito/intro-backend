@@ -57,9 +57,13 @@ router.post("/create/:employeeId", async (request, response) => {
       ...request.body,
       responsable: employeeId,
     });
-    await EmployeeModel.findByIdAndUpdate(employeeId, {
-      $push: { processos: newProcesso._id },
-    });
+    await EmployeeModel.findByIdAndUpdate(
+      employeeId,
+      {
+        $push: { processos: newProcesso._id },
+      },
+      { new: true, runValidators: true }
+    );
 
     return response.status(201).json(newProcesso);
   } catch (error) {
@@ -95,9 +99,13 @@ router.delete("/delete/:id", async (request, response) => {
   try {
     const { id } = request.params;
     const deleteProcesso = await ProcessosModel.findByIdAndDelete(id);
-    await EmployeeModel.findByIdAndUpdate(deleteProcesso.responsable, {
-      $pull: { processos: deleteProcesso._id },
-    });
+    await EmployeeModel.findByIdAndUpdate(
+      deleteProcesso.responsable,
+      {
+        $pull: { processos: deleteProcesso._id },
+      },
+      { new: true, runValidators: true }
+    );
     return response.status(200).json(deleteProcesso);
   } catch (error) {
     console.log(error);
